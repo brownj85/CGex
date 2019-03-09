@@ -22,9 +22,13 @@ static inline struct bucketHeader init_bucket(bucketList *lst){
 
 static inline void resize_bucket(bucketList *lst, struct bucketHeader *bckt){
     
-    if(bckt->elem == NULL)
+    if(bckt->elem == NULL){
+        lst->bucket_used++;
+
         bckt->elem = check_malloc(BUCKET_ITER * lst->elem_size, "malloc in resize_bucket");
-    else
+
+
+    }else
         bckt->elem = check_realloc(bckt->elem, (bckt->cap + BUCKET_ITER) * lst->elem_size,
                 "realloc in resize_bucket");
 
@@ -78,10 +82,10 @@ struct bucketHeader bucketList_get(bucketList *lst, size_t bucket_no){
 
 void bucketList_insert(
         bucketList *lst, size_t bucket_no, void *elem){
-
+    
     if(bucket_no >= lst->bucket_cap){
-        fprintf(stderr, "key error: %u\n", bucket_no);
-        exit(1);
+        resize_bucket_list(lst, 
+                max(bucket_no - lst->bucket_cap + 1, BUCKET_LIST_ITER));    
     }
 
     struct bucketHeader *bckt = lst->_buckets;
