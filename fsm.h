@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <wchar.h>
 
-#include "bucket_list/bucket_list.h"
+#include "array_list/array_list.h"
 #include "util.h"
 
 
@@ -23,8 +23,7 @@ typedef struct fsmTransition{
 }fsmTransition;
 
 typedef struct fsm{
-    bucketList data;
-    size_t num_nodes;
+    arrayList data;
 }fsm;
 
 fsmTransition fsmTransition_make(
@@ -36,6 +35,8 @@ fsm *fsm_make();
 
 void fsm_free(fsm *f);
 
+size_t fsm_len(fsm *f);
+
 fsm *make_string_fsm(wchar_t *str);
 
 fsm *make_charset_fsm(struct uint_tuple *ranges, size_t);
@@ -46,7 +47,4 @@ fsm *fsm_concat(fsm *a, fsm *b);
 
 fsm *fsm_k_star(fsm *f);
 
-int fsm_match(
-        fsm *f, wchar_t *str,
-        struct uint_tuple *match_tups,
-        size_t max_matches);
+arrayList fsm_match(fsm *f, wchar_t *str, size_t max_matches);
