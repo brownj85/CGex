@@ -5,7 +5,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 #include "util.h"
+
+void memswap(void *a, void *b, size_t data_size){
+    char temp[data_size];
+
+    memcpy(temp, a, data_size);
+    memcpy(a, b, data_size);
+    memcpy(b, temp, data_size);
+}
+
 
 void *check_realloc(void *ptr, size_t bytes, char *context){
     void *ret = realloc(ptr, bytes);
@@ -42,5 +52,9 @@ size_t max(size_t a, size_t b){
         return a;
 
     return b;
+}
+
+void print_tup(struct uint_tuple tup){
+    printf("(%ld, %ld)", tup.a, tup.b);
 }
 #endif
