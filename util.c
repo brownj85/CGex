@@ -55,6 +55,6 @@ size_t max(size_t a, size_t b){
 }
 
 void print_tup(struct uint_tuple tup){
-    printf("(%ld, %ld)", tup.a, tup.b);
+    printf("(%ld, %ld)\n", tup.a, tup.b);
 }
 #endif
