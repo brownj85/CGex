@@ -46,7 +46,7 @@ fsm *fsm_concat(fsm *a, fsm *b);
 
 fsm *fsm_k_star(fsm *f);
 
-void fsm_match(
-        fsm *f, wchar_t str,
+int fsm_match(
+        fsm *f, wchar_t *str,
         struct uint_tuple *match_tups,
         size_t max_matches);
