@@ -155,6 +155,9 @@ fsm *fsm_union(fsm *a, fsm *b){
         id++;
     }
 
+    if(fsm_len(a) < 3)
+        return dest;
+
     size_t shift_amt = fsm_len(a) - 3;
     nd = arrayList_get_ptr(&b->data, 2);
     fsmTransition *t;
@@ -196,7 +199,47 @@ fsm *fsm_union(fsm *a, fsm *b){
 }
 
 fsm *fsm_concat(fsm *a, fsm *b){
-    return NULL;
+    fsm *dest = fsm_make();
+
+    size_t b_start = fsm_len(a);
+
+    arrayList *nd;
+    size_t id = 2;
+    for(nd = aL_idx(&a->data, 2); nd != aL_done(&a->data); nd = aL_next(&a->data, nd)){
+        
+        fsmTransition *t;
+        for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+            size_t exit_node;
+            if(t->exit_nd == 1)
+                exit_node = b_start;
+            else
+                exit_node = t->exit_nd;
+            add_node(dest);
+            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, exit_node);
+        }
+        id++;
+    }
+
+    assert(id == b_start);
+
+    size_t shift_amt = fsm_len(a) - 2;
+
+    for(nd = aL_idx(&b->data, 2); nd != aL_done(&b->data); nd = aL_next(&b->data, nd)){
+        
+        fsmTransition *t;
+        for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+            size_t exit_node;
+            if(t->exit_nd <= 2)
+                exit_node = t->exit_nd;
+            else
+                exit_node = t->exit_nd + shift_amt;
+            add_node(dest);
+            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, exit_node);
+        }
+        id++;
+    }
+
+    return dest;  
 }
 
 fsm *fsm_k_star(fsm *f){
