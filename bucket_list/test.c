@@ -48,7 +48,7 @@ int main(int argc, char **argv){
 
         int *elem = (int*) lst.elem;
 
-        for(int j = 0; j < lst.used; j++){
+        for(int j = 0; j < lst.len; j++){
             if(elem[j] != bucket_list[i][j]){
                 valid = false;
                 break;

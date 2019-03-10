@@ -13,7 +13,7 @@
 static inline struct bucketHeader init_bucket(bucketList *lst){
     struct bucketHeader bckt;
 
-    bckt.used = 0;
+    bckt.len = 0;
     bckt.cap = 0;
     bckt.elem = NULL;
 
@@ -23,8 +23,7 @@ static inline struct bucketHeader init_bucket(bucketList *lst){
 static inline void resize_bucket(bucketList *lst, struct bucketHeader *bckt){
     
     if(bckt->elem == NULL){
-        lst->bucket_used++;
-
+        lst->len++;
         bckt->elem = check_malloc(BUCKET_ITER * lst->elem_size, "malloc in resize_bucket");
 
 
@@ -60,7 +59,7 @@ bucketList bucketList_make(size_t elem_size, size_t bucket_size){
     }
 
     list.bucket_cap = BUCKET_LIST_ITER;
-    list.bucket_used = 0;
+    list.len = 0;
 
     return list;
 }
@@ -92,15 +91,15 @@ void bucketList_insert(
     
     bckt += bucket_no;
 
-    if(bckt->cap - bckt->used < 1){
+    if(bckt->cap - bckt->len < 1){
        resize_bucket(lst, bckt);
     }
 
     char *elem_ptr = (char *) (bckt->elem);
-    elem_ptr += (bckt->used * lst->elem_size);
+    elem_ptr += (bckt->len * lst->elem_size);
     memcpy(elem_ptr, elem, lst->elem_size);
 
-    bckt->used += 1;
+    bckt->len += 1;
 }
 
 void bucketList_add_buckets(bucketList *lst, int amt){

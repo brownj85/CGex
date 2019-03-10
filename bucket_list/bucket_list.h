@@ -1,7 +1,7 @@
 #include <stddef.h>
 
 struct bucketHeader{
-    size_t used;
+    size_t len;
     size_t cap;
     void *elem;
 };
@@ -11,7 +11,7 @@ typedef struct bucketList{
     
     size_t bucket_size;
 
-    size_t bucket_used;
+    size_t len;
     size_t bucket_cap;
     struct bucketHeader *_buckets;
 }bucketList;
