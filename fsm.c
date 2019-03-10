@@ -112,7 +112,7 @@ fsm *make_string_fsm(wchar_t *str){
     fsm *f = fsm_make();
 
     if(*str == '\0'){
-        return NULL;
+        return f;
     }
 
     while(*(str + 1) != '\0'){
@@ -129,7 +129,14 @@ fsm *make_string_fsm(wchar_t *str){
 }
 
 fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges){
-    return NULL;
+    fsm *f = fsm_make();
+    size_t nd = add_node(f);
+    for(int i = 0; i < num_ranges; i++){
+        struct uint_tuple range = ranges[i];
+        insert_transition(f, nd, EQ, range.a, range.b, 1);
+    }
+
+    return f;
 }
 
 fsm *fsm_union(fsm *a, fsm *b){
