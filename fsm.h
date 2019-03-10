@@ -1,10 +1,10 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <wchar.h>
 
 #include "bucket_list/bucket_list.h"
 #include "util.h"
 
-typedef uint32_t w_char_t;
 
 enum transitionRule{
     FAIL    = 0,
@@ -16,8 +16,8 @@ enum transitionRule{
 
 typedef struct fsmTransition{
     char rule;
-    w_char_t min_ch;
-    w_char_t max_ch;
+    wchar_t min_ch;
+    wchar_t max_ch;
 
     size_t exit_nd;
 }fsmTransition;
@@ -28,15 +28,15 @@ typedef struct fsm{
 }fsm;
 
 fsmTransition fsmTransition_make(
-        enum transitionRule rule, w_char_t min_ch, w_char_t max_ch, size_t exit_nd);
+        enum transitionRule rule, wchar_t min_ch, wchar_t max_ch, size_t exit_nd);
 
-size_t fsmTransition_test(fsmTransition transition, w_char_t ch);
+size_t fsmTransition_test(fsmTransition transition, wchar_t ch);
 
 fsm *fsm_make();
 
 void fsm_free(fsm *f);
 
-fsm *make_string_fsm(w_char_t *str);
+fsm *make_string_fsm(wchar_t *str);
 
 fsm *make_charset_fsm(struct uint_tuple *ranges, size_t);
 
@@ -47,6 +47,6 @@ fsm *fsm_concat(fsm *a, fsm *b);
 fsm *fsm_k_star(fsm *f);
 
 void fsm_match(
-        fsm *f, w_char_t str,
+        fsm *f, wchar_t str,
         struct uint_tuple *match_tups,
         size_t max_matches);
