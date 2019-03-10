@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "../util.h"
 #include "array_list.h"
@@ -27,6 +28,10 @@ static void arrayList_resize(arrayList *arr){
 
 void *aL_first(arrayList *arr){
     return (void *) arr->_elem;
+}
+
+void *aL_idx(arrayList *arr, size_t idx){
+    return arrayList_get_ptr(arr, idx);
 }
 
 void *aL_next(arrayList *arr, void *iter){
@@ -56,12 +61,29 @@ arrayList arrayList_make(size_t elem_size, bool alloc){
     return arr;
 }
 
+void arrayList_deep_cpy(arrayList *lst, arrayList *dest){
+    dest->_elem = check_malloc(
+            lst->_cap * lst->_elem_size,
+            "malloc in arrayList_deep_cpy");
+    dest->_cap = lst->_cap;
+    dest->_elem_size = lst->_elem_size;
+    dest->len = 0;
+    
+
+    void *elem;
+    for(elem = aL_first(lst); elem != aL_done(lst); elem = aL_next(lst, elem))
+        arrayList_append(dest, elem);
+
+    assert(dest->len == lst->len);
+    
+}
+
 void arrayList_free(arrayList *arr){
     free(arr->_elem);
 }
 
 void *arrayList_get_ptr(arrayList *arr, size_t i){
-    return (void *) &arr->_elem[i * arr->_elem_size];
+    return inc_by_bytes(arr->_elem, i * arr->_elem_size);
 }
 
 void arrayList_get_cpy(arrayList *arr, size_t i, void *buf){

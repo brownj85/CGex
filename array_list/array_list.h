@@ -18,6 +18,8 @@ arrayList arrayList_make(size_t elem_size, bool alloc);
 
 void arrayList_free(arrayList *arr);
 
+void arrayList_deep_cpy(arrayList *src, arrayList *dest);
+
 void *arrayList_get_ptr(arrayList *arr, size_t i);
 
 void arrayList_get_cpy(arrayList *arr, size_t i, void *buf);
@@ -28,7 +30,13 @@ size_t arrayList_append(arrayList *arr, void *elem);
 
 size_t arrayList_pop(arrayList *arr, void *buf);
 
+
+
+//  == Iterators
+
 void *aL_first(arrayList *arr);
+
+void *aL_idx(arrayList *arr, size_t idx);
 
 void *aL_next(arrayList *arr, void *iter);
 

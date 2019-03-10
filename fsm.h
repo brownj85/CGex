@@ -5,7 +5,6 @@
 #include "array_list/array_list.h"
 #include "util.h"
 
-
 enum transitionRule{
     FAIL    = 0,
     ACCEPT  = 1,
@@ -48,3 +47,6 @@ fsm *fsm_concat(fsm *a, fsm *b);
 fsm *fsm_k_star(fsm *f);
 
 arrayList fsm_match(fsm *f, wchar_t *str, size_t max_matches);
+
+
+void print_fsm(fsm *);

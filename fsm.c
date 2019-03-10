@@ -136,11 +136,63 @@ fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges){
         insert_transition(f, nd, EQ, range.a, range.b, 1);
     }
 
+    print_fsm(f);
+
     return f;
 }
 
 fsm *fsm_union(fsm *a, fsm *b){
-    return NULL;
+    fsm *dest = fsm_make();
+ 
+    size_t id = 0;
+    arrayList *nd;
+    for(nd = aL_first(&a->data); nd != aL_done(&a->data); nd = aL_next(&a->data, nd)){
+        if(id >= 2){
+            arrayList dest_nd = arrayList_make(0, false); 
+            size_t idx = arrayList_append(&dest->data, &dest_nd) - 1;
+            arrayList_deep_cpy(nd, arrayList_get_ptr(&dest->data, idx));
+        }
+        id++;
+    }
+
+    size_t shift_amt = fsm_len(a) - 3;
+    nd = arrayList_get_ptr(&b->data, 2);
+    fsmTransition *t;
+    for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+       size_t exit_node;
+       if(t->exit_nd > 2)
+           exit_node = t->exit_nd + shift_amt;
+       else
+           exit_node = t->exit_nd;
+
+       insert_transition(dest, 2, t->rule, t->min_ch, t->max_ch, exit_node);
+    }
+
+    
+    if(fsm_len(b) < 4){
+        return dest;
+    }
+
+    id = 3;
+    for(nd = aL_idx(&b->data, 3); nd != aL_done(&b->data); nd = aL_next(&b->data, nd)){
+        id++;
+        size_t id_p = add_node(dest);
+        fsmTransition *t;
+        for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+            size_t exit_node;
+            if(t->exit_nd > 2)
+                exit_node = t->exit_nd + shift_amt;
+            else
+                exit_node = t->exit_nd;
+
+            insert_transition(dest, id_p, t->rule, t->min_ch, t->max_ch, exit_node);
+        }
+    }
+
+    print_fsm(dest);
+    printf("-----\n");
+
+    return dest;
 }
 
 fsm *fsm_concat(fsm *a, fsm *b){
@@ -188,8 +240,6 @@ arrayList fsm_match(
         if(str[i] == '\0')
             sent = false;
 
-        printf("%c\n", (char) str[i]);
-        print_states(active_states);
         assert(next_states->len == 0);
         
         while(active_states->len > 0){
