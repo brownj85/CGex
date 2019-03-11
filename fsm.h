@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <wchar.h>
 
@@ -36,9 +37,9 @@ void fsm_free(fsm *f);
 
 size_t fsm_len(fsm *f);
 
-fsm *make_string_fsm(wchar_t *str);
+fsm *make_string_fsm(wchar_t *str, bool invert);
 
-fsm *make_charset_fsm(struct uint_tuple *ranges, size_t);
+fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges, bool invert);
 
 fsm *fsm_union(fsm *a, fsm *b);
 

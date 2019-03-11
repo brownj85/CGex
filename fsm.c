@@ -108,8 +108,12 @@ size_t fsm_len(fsm *f){
     return f->data.len;
 }
 
-fsm *make_string_fsm(wchar_t *str){
+fsm *make_string_fsm(wchar_t *str, bool invert){
     fsm *f = fsm_make();
+
+    char match_type = EQ;
+    if(invert)
+        match_type = N_EQ;
 
     if(*str == '\0'){
         return f;
@@ -117,23 +121,28 @@ fsm *make_string_fsm(wchar_t *str){
 
     while(*(str + 1) != '\0'){
         size_t nd = add_node(f);
-        insert_transition(f, nd, EQ, *str, *str, nd + 1);
+        insert_transition(f, nd, match_type, *str, *str, nd + 1);
         str++;
     }
     size_t nd = add_node(f);
-    insert_transition(f, nd, EQ, *str, *str, 1);
+    insert_transition(f, nd, match_type, *str, *str, 1);
 
     print_fsm(f);
 
     return f;
 }
 
-fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges){
+fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges, bool invert){
+    char match_type = EQ;
+    if(invert){
+        match_type = N_EQ;
+    }
+
     fsm *f = fsm_make();
     size_t nd = add_node(f);
     for(int i = 0; i < num_ranges; i++){
         struct uint_tuple range = ranges[i];
-        insert_transition(f, nd, EQ, range.a, range.b, 1);
+        insert_transition(f, nd, match_type, range.a, range.b, 1);
     }
 
     print_fsm(f);
