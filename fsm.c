@@ -243,7 +243,22 @@ fsm *fsm_concat(fsm *a, fsm *b){
 }
 
 fsm *fsm_k_star(fsm *f){
-    return NULL;
+    fsm *dest = fsm_make();
+    
+    arrayList *nd;
+    for(nd = aL_idx(&f->data, 2); nd != aL_done(&f->data); nd = aL_next(&f->data, nd)){
+
+        fsmTransition *t;
+        for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+            size_t id = add_node(dest);
+            if(t->exit_nd == 1){
+                insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, 2);
+            }
+            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, t->exit_nd);
+        }
+    }
+
+    return dest;
 }
 
 static inline void get_next_states(
