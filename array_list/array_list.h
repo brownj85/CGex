@@ -1,9 +1,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#ifndef ARRAYLIST_ITER
-#define ARRAYLIST_ITER 128
-#endif
+#define DEF_RSZ_FCTR 2
+#define DEF_CAP 1024
 
 typedef struct arrayList{
     size_t len;
@@ -11,6 +10,8 @@ typedef struct arrayList{
     
     size_t _cap;
     size_t _elem_size;
+
+    float resize_factor;
 }arrayList;
 
 

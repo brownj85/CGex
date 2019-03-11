@@ -14,12 +14,14 @@ static inline void *inc_by_bytes(void *ptr, size_t nbytes){
 }
 
 static void arrayList_resize(arrayList *arr){
-  
-    arr->_elem = realloc(arr->_elem, (arr->_cap + ARRAYLIST_ITER) * arr->_elem_size);
 
-    memset(&arr->_elem[arr->_cap * arr->_elem_size], 0, ARRAYLIST_ITER * arr->_elem_size);
+    size_t new_cap = arr->_cap * arr->resize_factor;
 
-    arr->_cap += ARRAYLIST_ITER;
+    arr->_elem = realloc(arr->_elem, new_cap * arr->_elem_size);
+
+    memset(&arr->_elem[arr->_cap * arr->_elem_size], 0, new_cap - arr->_cap);
+
+    arr->_cap = new_cap;
 }
 
 //  ==
@@ -48,13 +50,14 @@ arrayList arrayList_make(size_t elem_size, bool alloc){
     arrayList arr;
 
     if(alloc){
-        arr._elem = calloc(ARRAYLIST_ITER * elem_size, 1);
-        arr._cap = ARRAYLIST_ITER;
+        arr._elem = calloc(DEF_CAP * elem_size, 1);
+        arr._cap = DEF_CAP;
     }else{
         arr._elem = NULL;
         arr._cap = 0;
     }
-    
+   
+    arr.resize_factor = DEF_RSZ_FCTR; 
     arr._elem_size = elem_size;
     arr.len = 0;
 
