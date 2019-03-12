@@ -211,9 +211,6 @@ fsm *fsm_union(fsm *a, fsm *b){
         }
     }
 
-    print_fsm(dest);
-    printf("-----\n");
-
     return dest;
 }
 
@@ -250,7 +247,7 @@ fsm *fsm_concat(fsm *a, fsm *b){
         fsmTransition *t;
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t exit_node;
-            if(t->exit_nd <= 2)
+            if(t->exit_nd < 2)
                 exit_node = t->exit_nd;
             else
                 exit_node = t->exit_nd + shift_amt;
