@@ -55,12 +55,18 @@ char *cprompt_input(char *prompt){
     return buf;
 }    
 int main(int argc, char **argv){
-  
-
-    while(true){
+    
         wchar_t *pattern = prompt_input("enter regex: ");
         fsm *f = parse_regex(pattern);
 
-        print_fsm(f);
-    }
+        while(true){
+            wchar_t *in = prompt_input("enter string: ");
+            arrayList m = fsm_match(f, in, -1);
+
+            struct uint_tuple *t;
+            for(t = aL_first(&m); t != aL_done(&m); t = aL_next(&m, t)){
+                print_tup(*t);
+            }
+        }
 }
+
