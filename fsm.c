@@ -254,7 +254,14 @@ fsm *fsm_k_star(fsm *f){
     fsm *dest = fsm_make();
     
     arrayList *nd;
+    size_t start_0 = add_node(dest);
+    fsmTransition null = {NIL, 0, 0, 1};
+    insert_transition(dest, 2, &null);
 
+    assert(start_0 == 2);
+
+    fsmTransition pivot = {NIL, 0, 0, start_0 + 1};
+    insert_transition(dest, 2, &pivot);
    
     for(nd = aL_idx(&f->data, 2); nd != aL_done(&f->data); nd = aL_next(&f->data, nd)){
 
@@ -262,18 +269,19 @@ fsm *fsm_k_star(fsm *f){
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t id = add_node(dest);
             if(t->exit_nd == 1){
-                fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, 2};
+                fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, 3};
                 insert_transition(dest, id, &t_p);
             }
             
-            fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, t->exit_nd};
+            fsmTransition t_p;
+            if(t->exit_nd == 2)
+                t_p = (fsmTransition) {t->rule, t->min_ch, t->max_ch, 3};
+            else
+                t_p = (fsmTransition) {t->rule, t->min_ch, t->max_ch, t->exit_nd};
+            
             insert_transition(dest, id, &t_p);
         }
     }
-
-    fsmTransition null = {NIL, 0, 0, 1};
-    insert_transition(dest, 2, &null);
-    
 
     return dest;
 }
