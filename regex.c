@@ -15,22 +15,6 @@ static inline void err_expr_invalid(wchar_t *pattern, size_t start, size_t end){
     exit(1);
 }
 
-static inline int is_metachar(wchar_t ch){
-    for(int i = 1; i < NUM_MCH; i++){
-        if(ch == metaChars[i]){
-            return ch;
-        }
-    }
-
-    return 0;
-}
-
-static inline void check_implemented(int mchar_idx){
-    if(!metaChar_impl[mchar_idx]){
-        err_not_impl(mchar_idx);
-    }
-}
-
 arrayList find_sets(wchar_t *pattern){
     arrayList acc = arrayList_make(sizeof(struct uint_tuple), true);
 
