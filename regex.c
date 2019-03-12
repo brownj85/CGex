@@ -35,15 +35,15 @@ int parse_set(wchar_t *str, fsm **res_ptr){
 
             fsmTransition t;
             if(str[i + 1] == '-'){
-                if(str[i + 2] == '\0')
+                if(str[i + 2] == '\0'){
                     err_expr_invalid(str, 0, wcslen(str));
-
+                }
                 t = (fsmTransition) {EQ, str[i], str[i + 2], 1};
 
                 i += 2;
-            }else
+            }else{
                 t = (fsmTransition) {EQ, str[i], str[i], 1};
-            
+            }
             fsm_insert_transition(f, 2, &t);
         }
         i++;

@@ -68,10 +68,11 @@ static inline size_t test_transition(fsmTransition t, wchar_t ch){
             return 0;
 
     }else if(t.rule == N_EQ){
-        if(t.min_ch > ch || t.max_ch < ch)
+        if(t.min_ch > ch || t.max_ch < ch){
             return t.exit_nd;
-        else
+        }else{
             return 0;
+        }
     }
 
     return 0;
@@ -162,11 +163,11 @@ fsm *fsm_union(fsm *a, fsm *b){
     fsmTransition *t;
     for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
        size_t exit_node;
-       if(t->exit_nd > 2)
+       if(t->exit_nd > 2){
            exit_node = t->exit_nd + shift_amt;
-       else
+       }else{
            exit_node = t->exit_nd;
-
+       }
        fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
        insert_transition(dest, 2, &t_p);
     }
@@ -183,11 +184,11 @@ fsm *fsm_union(fsm *a, fsm *b){
         fsmTransition *t;
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t exit_node;
-            if(t->exit_nd > 2)
+            if(t->exit_nd > 2){
                 exit_node = t->exit_nd + shift_amt;
-            else
+            }else{
                 exit_node = t->exit_nd;
-       
+            }
             fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
             insert_transition(dest, id_p, &t_p);
         }
@@ -208,10 +209,12 @@ fsm *fsm_concat(fsm *a, fsm *b){
         fsmTransition *t;
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t exit_node;
-            if(t->exit_nd == 1)
+            if(t->exit_nd == 1){
                 exit_node = b_start;
-            else
+            }else{
                 exit_node = t->exit_nd;
+            }
+             
             add_node(dest);
 
             fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
@@ -229,10 +232,12 @@ fsm *fsm_concat(fsm *a, fsm *b){
         fsmTransition *t;
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t exit_node;
-            if(t->exit_nd < 2)
+            if(t->exit_nd < 2){
                 exit_node = t->exit_nd;
-            else
+            }else{
                 exit_node = t->exit_nd + shift_amt;
+            }
+                
             add_node(dest);
 
             fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
@@ -268,11 +273,11 @@ fsm *fsm_kstar(fsm *f){
             }
             
             fsmTransition t_p;
-            if(t->exit_nd == 2)
+            if(t->exit_nd == 2){
                 t_p = (fsmTransition) {t->rule, t->min_ch, t->max_ch, 3};
-            else
+            }else{
                 t_p = (fsmTransition) {t->rule, t->min_ch, t->max_ch, t->exit_nd};
-            
+            }
             insert_transition(dest, id, &t_p);
         }
     }
