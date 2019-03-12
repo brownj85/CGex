@@ -323,9 +323,6 @@ arrayList fsm_match(
     bool escaped = false;
 
     while(active_states->len > 0 && matches.len != max_matches){
-      //  if(str[i] == '\0')
-      //      sent = false;
-
         assert(next_states->len == 0);
 
         while(active_states->len > 0){
