@@ -244,7 +244,7 @@ fsm *fsm_concat(fsm *a, fsm *b){
     return dest;  
 }
 
-fsm *fsm_k_star(fsm *f){
+fsm *fsm_kstar(fsm *f){
     fsm *dest = fsm_make();
     
     arrayList *nd;
@@ -281,7 +281,7 @@ fsm *fsm_k_star(fsm *f){
 }
 
 fsm *fsm_kplus(fsm *f){
-    fsm *g = fsm_k_star(f);
+    fsm *g = fsm_kstar(f);
     fsm *q = fsm_concat(f, g);
 
     fsm_free(g);

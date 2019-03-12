@@ -42,7 +42,7 @@ fsm *fsm_union(fsm *a, fsm *b);
 
 fsm *fsm_concat(fsm *a, fsm *b);
 
-fsm *fsm_k_star(fsm *f);
+fsm *fsm_kstar(fsm *f);
 
 fsm *fsm_kplus(fsm *f);
 

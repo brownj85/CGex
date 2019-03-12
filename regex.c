@@ -66,7 +66,7 @@ static inline bool is_quantifier(wchar_t ch){
 static inline fsm *apply_quantifier(fsm *f, wchar_t quant){
     fsm *g = NULL;
     if(quant == metaChars[KSTAR]){
-        g = fsm_k_star(f);
+        g = fsm_kstar(f);
     }else if(quant == metaChars[KPLUS]){
         g = fsm_kplus(f);
     }else if(quant == metaChars[AMO]){
