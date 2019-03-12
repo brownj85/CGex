@@ -32,7 +32,6 @@ size_t arrayList_append(arrayList *arr, void *elem);
 size_t arrayList_pop(arrayList *arr, void *buf);
 
 
-
 //  == Iterators
 
 void *aL_first(arrayList *arr);
