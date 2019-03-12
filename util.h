@@ -37,4 +37,7 @@ int srch_wcstr(wchar_t *str, wchar_t *chset, wchar_t *esc);
 wchar_t *readline(wchar_t *prompt);
 
 wchar_t *freadline(wchar_t *prompt, FILE *stream);
+
+wchar_t *get_substring(wchar_t *str, uint_tuple idx);
+
 #endif

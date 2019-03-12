@@ -8,6 +8,20 @@
 #include <stdbool.h>
 #include "util.h"
 
+
+wchar_t *get_substring(wchar_t *str, uint_tuple idx_tup){
+    size_t len = idx_tup.b - idx_tup.a;
+    wchar_t *sbstr = check_malloc(sizeof(wchar_t) * (len + 1), "malloc in get_substring");
+
+    sbstr[len] = '\0';
+
+    for(int i = idx_tup.a; i < idx_tup.b; i++){
+        sbstr[i - idx_tup.a] = str[i];
+    }
+
+    return sbstr;
+}
+
 void print_tup(struct uint_tuple tup){
     printf("(%ld, %ld)\n", tup.a, tup.b);
 }
