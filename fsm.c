@@ -90,7 +90,7 @@ static void get_next_states(
 
         if(t->rule == NIL){
             struct state_tuple next_state = {t->exit_nd, curr_st.strt, curr_st.end};
-            get_next_states(f, ch, next_state, next_states);
+            arrayList_append(next_states, &next_state);
         }else{
             size_t exit_nd = test_transition(*t, ch);
 
@@ -254,6 +254,8 @@ fsm *fsm_k_star(fsm *f){
     fsm *dest = fsm_make();
     
     arrayList *nd;
+
+   
     for(nd = aL_idx(&f->data, 2); nd != aL_done(&f->data); nd = aL_next(&f->data, nd)){
 
         fsmTransition *t;
@@ -268,6 +270,10 @@ fsm *fsm_k_star(fsm *f){
             insert_transition(dest, id, &t_p);
         }
     }
+
+    fsmTransition null = {NIL, 0, 0, 1};
+    insert_transition(dest, 2, &null);
+    
 
     return dest;
 }
@@ -292,9 +298,9 @@ arrayList fsm_match(
 
     bool escaped = false;
 
-    while(sent && matches.len != max_matches){
-        if(str[i] == '\0')
-            sent = false;
+    while(active_states->len > 0 && matches.len != max_matches){
+      //  if(str[i] == '\0')
+      //      sent = false;
 
         assert(next_states->len == 0);
 
@@ -309,17 +315,17 @@ arrayList fsm_match(
                     break;
 
             }else{
-                get_next_states(f, str[i], curr_st, next_states);
+                get_next_states(f, str[curr_st.end], curr_st, next_states);
             }
         }
 
-        struct state_tuple next = {2, i + 1, i + 1};
-        arrayList_append(next_states, &next);
-        
-        i++;
+        if(str[i] != '\0'){
+            struct state_tuple next = {2, i + 1, i + 1};
+            arrayList_append(next_states, &next);
+            i++;
+        }
 
         memswap(&next_states, &active_states, sizeof(arrayList *));
-
     
     }
 
