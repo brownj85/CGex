@@ -144,51 +144,45 @@ static fsm *build_string_fsm(wchar_t *sub, size_t *end){
     return f;
 }
 
+arrayList find_sets(wchar_t *pattern){
+    arrayList acc = arrayList_make(sizeof(struct uint_tuple), true);
 
-static inline fsm *grouping_search_fsm(wchar_t l_delim, wchar_t r_delim){
-    fsm *f = fsm_make();
+    int i = 0;
 
-    size_t start = fsm_add_node(f);
-    size_t start_esc = fsm_add_node(f);
-    
-    size_t inter = fsm_add_node(f);
-    size_t inter_esc = fsm_add_node(f);
-    
-    fsmTransition l_b = {EQ, l_delim, l_delim, inter};
-    fsm_insert_transition(f, start, &l_b);
+    struct uint_tuple curr;
+    wchar_t chset_l[] = {metaChars[LSET], '\0'};
+    wchar_t chset_r[] = {metaChars[RSET], '\0'};
 
-    fsmTransition start_esc_in = {EQ, '\\', '\\', start_esc};
-    fsm_insert_transition(f, start, &start_esc_in);
+    bool found_l = false;
+    int l_idx = -1;
+    int r_idx = -1;
+    while(i < wcslen(pattern)){
+        if(!found_l){
+            l_idx = find_char(&pattern[i], chset_l, metaChars[ESC]) + i;
+            if(l_idx == -1 + i){
+                break;
+            }
+            found_l = true;
+            i = l_idx + 1;
+        }else{
+            r_idx = find_char(&pattern[i], chset_r, metaChars[ESC]) + i;
+            if(r_idx == -1 + i){
+                err_expr_invalid(pattern, 0, wcslen(pattern));
+            }
 
-    fsmTransition start_esc_out = {EQ, WCHAR_MIN, WCHAR_MAX, start};
-    fsm_insert_transition(f, start_esc, &start_esc_out);
-       
-    fsmTransition inter_esc_in = {EQ, '\\', '\\', inter_esc};
-    fsm_insert_transition(f, inter, &inter_esc_in);
-
-    fsmTransition inter_esc_out = {EQ, WCHAR_MIN, WCHAR_MAX, inter};
-    fsm_insert_transition(f, inter_esc, &inter_esc_out);
-
-    size_t breaks[] = {metaChars[ESC], l_delim, r_delim};
-    sort_uint(breaks, 3);
-
-    fsmTransition lower = {EQ, WCHAR_MIN, breaks[0] - 1, inter};
-    fsm_insert_transition(f, inter, &lower);
-
-    for(int i = 0; i < 2; i++){
-        fsmTransition t = {EQ, breaks[i] + 1, breaks[i + 1] - 1, inter};
-        fsm_insert_transition(f, inter, &t);
+            struct uint_tuple tup = {l_idx, r_idx};
+            arrayList_append(&acc, &tup);
+            found_l = false;
+            i = r_idx + 1;
+        }
     }
 
-    fsmTransition upper = {EQ, breaks[2] + 1, WCHAR_MAX, inter};
-    fsm_insert_transition(f, inter, &upper);
+    if(found_l)
+        err_expr_invalid(pattern, 0, wcslen(pattern));
 
-    fsmTransition succ = {EQ, r_delim, r_delim, 1};
-    fsm_insert_transition(f, inter, &succ);
-
-    return f;
+    return acc;
 }
-
+                        
 
 int find_groupings_rec(wchar_t *pattern, 
         wchar_t ldelim, wchar_t rdelim,
@@ -259,73 +253,117 @@ arrayList find_special_char(wchar_t *pattern, wchar_t ch){
     return acc;
 }
 
-fsm *parse_regex(wchar_t *pattern){
-    
-    arrayList sets = find_groupings(pattern, '[', ']');  
-   
-    arrayList special = find_special_char(pattern, '*');
-    
-    
-    struct uint_tuple *idx;
-    for(idx = aL_first(&sets); idx != aL_done(&sets); idx = aL_next(&sets, idx)){
-        print_tup(*idx);
-    }
+int parse_set(wchar_t *str, fsm **res_ptr){
+    fsm *f = fsm_make();
 
-    int *ip;
-    for(ip = aL_first(&special); ip != aL_done(&special); ip = aL_next(&special, ip)){
-        printf("%d\n", *ip);
-    }
+    size_t id = fsm_add_node(f);
 
- 
-    fsm *f = NULL;
-    size_t i;
-    fsm *union_first = NULL;
-    fsm *prev = NULL;
-
-    while(false){
-        if(pattern[i] == '*'){
-            if(prev == NULL)
-                err_expr_invalid(pattern, i, i + 2);
-            
-            fsm *g = fsm_k_star(prev);
-            fsm_free(prev);
-            prev = g; 
-            i++;
-        }else if(pattern[i] == '|'){
-            if(prev == NULL || union_first != NULL)
-                //err_invalid_expr(pattern, i, i + 2);
-
-            union_first = prev;
-            prev = NULL;
-            i++;
+    bool escaped = false;
+    int i = 0;
+    while(str[i] != '\0'){
+        if(!escaped && str[i] == metaChars[RSET]){
+            *res_ptr = f;
+            return i + 2;
+        }else if(!escaped && str[i] == metaChars[ESC]){
+            escaped = true;
         }else{
-            fsm *g = NULL;
-            if(union_first != NULL && prev != NULL){
-                g = fsm_union(union_first, prev);
-                fsm_free(union_first);
-                fsm_free(prev);
+            escaped = false;
+            
+            fsmTransition t = {EQ, str[i], str[i], 1};
+            fsm_insert_transition(f, 2, &t);
+        }
+        i++;
+    }
 
-                union_first = NULL;
-                prev = g;
+    *res_ptr = NULL;
+    return 0;
+}
 
-            }else if(prev != NULL){
-                if(f == NULL){
-                    f = prev;
-                }else{
-                    fsm *g = fsm_concat(f, prev);
-                    fsm_free(f);
-                    fsm_free(prev);
 
-                    prev = NULL;
-                    f = g;
-                }
-            }else{
-                prev = NULL;
+
+int parse_group(wchar_t *grp_start, fsm **res_ptr){
+    int i = 0;
+
+    wchar_t *str = grp_start;
+    
+    fsm *acc = NULL;
+    fsm *alt = NULL;
+    
+    bool escaped = false;
+    while(str[i] != '\0'){
+        fsm *curr = NULL;
+        if(str[i] == metaChars[ESC] && !escaped){
+            escaped = true;
+            i++;
+        }else if(str[i] == metaChars[LSET] && !escaped){
+            i += parse_set(&str[i + 1], &curr);
+            assert(curr != NULL);
+        }else if(str[i] == metaChars[LGRP] && !escaped){
+            i += parse_group(&str[i + 1], &curr);
+            assert(curr != NULL);
+        }else if(str[i] == metaChars[RGRP] && !escaped){
+            *res_ptr = acc;
+            return i + 2;
+        }else{
+            curr = fsm_make();
+            fsmTransition t = {EQ, str[i], str[i], 1};
+
+            fsm_add_node(curr);
+            fsm_insert_transition(curr, 2, &t);
+            i++;
+        }
+
+        if(curr != NULL){
+            escaped = false;
+            if(str[i] == metaChars[KSTAR]){
+                fsm *g = fsm_k_star(curr);
+                
+                memswap(&g, &curr, sizeof(fsm *));
+                fsm_free(g);
+                i++;
             }
+
+            if(alt != NULL){
+                fsm *g = fsm_union(alt, curr);
+
+                memswap(&g, &curr, sizeof(fsm *));
+                fsm_free(g);
+                fsm_free(alt);
+
+                alt = NULL;
+            }
+
+            if(str[i] == metaChars[ALT]){
+                assert(alt == NULL);
+                alt = curr;
+                i++;
+            }else if(acc == NULL){
+                acc = curr;
+            }else{
+                fsm *g = fsm_concat(acc, curr);
+                
+                memswap(&g, &acc, sizeof(fsm *));
+                fsm_free(g);
+                fsm_free(curr);
+
+            }   
         }
     }
 
-    return prev;
+    assert(alt == NULL);
+    *res_ptr = acc;
+
+    return i;
+}
+
+fsm *parse_regex(wchar_t *pattern){
+
+
+    fsm *f = NULL;
+    
+    parse_group(pattern, &f);
+
+    return f;
 }
 
 
