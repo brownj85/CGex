@@ -159,6 +159,3 @@ fsm *parse_regex(wchar_t *pattern){
 
     return f;
 }
-
-
-
