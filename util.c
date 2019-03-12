@@ -3,11 +3,14 @@
 #define UTIL_C
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
 #include "util.h"
+
+void print_tup(struct uint_tuple tup){
+    printf("(%ld, %ld)\n", tup.a, tup.b);
+}
 
 void memswap(void *a, void *b, size_t data_size){
     char temp[data_size];
@@ -55,47 +58,61 @@ size_t max(size_t a, size_t b){
     return b;
 }
 
-void sort_uint(size_t *arr, size_t len){
-    for(size_t i = 1; i < len; i++){
-
-        size_t j = i;
-        while(j > 0  && arr[j-1] > arr[j]){
-            size_t temp = arr[j];
-            
-            arr[j] = arr[j-1];
-            arr[j-1] = temp;
-
-            j--;
-        }
+static inline char search_chset(wchar_t ch, wchar_t *chset){
+    for(int i = 0; chset[i] != L'\0'; i++){
+        if(ch == chset[i])
+            return 1;
     }
+
+    return 0;
 }
 
-
-void print_tup(struct uint_tuple tup){
-    printf("(%ld, %ld)\n", tup.a, tup.b);
-}
-
-
-int find_char(wchar_t *str, wchar_t *chset, wchar_t esc){
+int srch_wcstr(wchar_t *str, wchar_t *chset, wchar_t *esc){
 
     int i = 0;
     while(str[i] != '\0'){
         
-            if(str[i] == esc){
-                i++;
-                if(str[i] == '\0')
-                    return -1;
-            }else{
-                for(int j = 0; chset[j] != '\0'; j++){
-                    if(str[i] == chset[j])
-                        return i;
-                }
-            }
- 
+        if(!search_chset(str[i], esc)){
+            if(search_chset(str[i], chset))
+                return i;
+        }
+        
         i++;
+        
     }
 
     return -1;
 }
+
+
+wchar_t *freadline(wchar_t *prompt, FILE *stream){
+    wchar_t *line = check_malloc(sizeof(wchar_t) * 1024, "malloc in freadline");
+    size_t cap = 1024;
+
+    printf("%ls\n", prompt);
+    int i = 0;
+    wchar_t ch = fgetwc(stream);
+    while(ch != WEOF && ch != L'\n'){
+        line[i] = ch;
+        i++;
+
+        if(i == cap){
+            cap += 1024;
+            line = check_realloc(line, sizeof(wchar_t) * cap, "realloc in freadline");
+        }
+
+        ch = fgetwc(stream);
+    }
+
+    line[i] = L'\0';
+    i++;
+    line = check_realloc(line, sizeof(wchar_t) * i, "realloc in freadline");
+    return line;
+}
+
+wchar_t *readline(wchar_t *prompt){
+    return freadline(prompt, stdin);
+}
+
 
 #endif
