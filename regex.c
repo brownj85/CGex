@@ -31,119 +31,6 @@ static inline void check_implemented(int mchar_idx){
     }
 }
 
-static fsm *build_set_fsm(wchar_t *sub, size_t *end){
-    fsm *f = fsm_make();
-
-    size_t i = 0;
-    bool escaped = false;
-
-    size_t id = fsm_add_node(f);
-    assert(id == 2);
-
-    bool sent = true;
-    while(sent){
-        if(sub[i] == '\0'){
-            err_expr_invalid(sub, 0, i);
-        }
-
-        wchar_t mch = 0;
-        if(!escaped)
-            mch = is_metachar(sub[i]);
-
-        if(mch == 0){
-            fsmTransition t = {EQ, sub[i], sub[i], 1};
-            fsm_insert_transition(f, 2, &t);
-        }else if(mch == '\\' ){
-            escaped = true;
-        }else if(mch == '^'){
-            err_not_impl(mch);
-        }else if(mch == '$'){
-            err_not_impl(mch); 
-        }else if(mch == '.'){
-            fsmTransition t = {N_EQ, '\n', '\n', 1};
-        }else if(mch == ']'){
-            sent = false;
-            *end = i + 1;
-        }else{
-            err_expr_invalid(sub, 0, i);
-        }
-    }
-
-    return f;
-}
-
-static fsm *build_string_fsm(wchar_t *sub, size_t *end){
-    fsm *f = fsm_make();
-    
-    size_t i = 0;
-    bool escaped = false;
-
-    fsmTransition prev;
-    bool prev_valid = false;
-
-    bool sent = true;
-    while(sent){
-        fsmTransition curr;
-        bool curr_valid = false;
-
-        wchar_t mch = 0;
-        if(!escaped)
-            mch = is_metachar(sub[i]);
-
-        if(sub[i] == '\0'){
-            if(escaped)
-                err_expr_invalid(sub, 0, i);
-            sent = false;
-        }
-
-        else if(mch){
-            if(mch == metaChars[ESC]){
-                escaped = true;
-            }else if(mch == '+'){
-                err_not_impl(mch);
-            }else if(mch == '?'){
-                err_not_impl(mch); 
-            }else if(mch == '.'){
-                curr  = (fsmTransition) {N_EQ, '\n', '\n', 0};
-                curr_valid = true;
-            }else if(mch == ')' || mch == ']' || mch == '}'){
-                err_expr_invalid(sub, 0, i);
-            }else{
-                *end = i;
-                sent = false;  
-            }
-
-        }else{
-            curr = (fsmTransition) {EQ, sub[i], sub[i], 0};
-            curr_valid = true;
-        }
-
-        if(prev_valid){
-            size_t id = fsm_add_node(f);
-            
-            if(!sent)
-                prev.exit_nd = 1;
-            else
-                prev.exit_nd = id + 1;
-            
-            fsm_insert_transition(f, id, &prev);
-
-        }
-
-        if(curr_valid){
-            prev_valid = true;
-            prev = curr;
-        }else{
-            prev_valid = false;
-        }
- 
-        i++;
-        
-    }
-
-    return f;
-}
-
 arrayList find_sets(wchar_t *pattern){
     arrayList acc = arrayList_make(sizeof(struct uint_tuple), true);
 
@@ -357,7 +244,6 @@ int parse_group(wchar_t *grp_start, fsm **res_ptr){
 }
 
 fsm *parse_regex(wchar_t *pattern){
-
 
     fsm *f = NULL;
     
