@@ -89,7 +89,7 @@ wchar_t *freadline(wchar_t *prompt, FILE *stream){
     wchar_t *line = check_malloc(sizeof(wchar_t) * 1024, "malloc in freadline");
     size_t cap = 1024;
 
-    printf("%ls\n", prompt);
+    printf("%ls", prompt);
     int i = 0;
     wchar_t ch = fgetwc(stream);
     while(ch != WEOF && ch != L'\n'){
