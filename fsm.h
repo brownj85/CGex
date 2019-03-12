@@ -35,10 +35,6 @@ void fsm_free(fsm *f);
 
 size_t fsm_len(fsm *f);
 
-fsm *make_string_fsm(wchar_t *str, bool invert);
-
-fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges, bool invert);
-
 void fsm_insert_transition(fsm *f, size_t node_id, fsmTransition *t);
 
 size_t fsm_add_node(fsm *f);
