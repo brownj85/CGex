@@ -114,13 +114,7 @@ fsm *fsm_make(){
     f->data = arrayList_make(sizeof(arrayList), true);
 
     add_node(f);
-    fsmTransition fail = {FAIL, 0, 0, 0};
-    insert_transition(f, 0, &fail);
-
     add_node(f);
-    fsmTransition acc = {ACCEPT, 0, 0, 1};
-    insert_transition(f, 1, &acc);
-
     return f;   
 }
 
@@ -260,7 +254,7 @@ fsm *fsm_k_star(fsm *f){
 
     assert(start_0 == 2);
 
-    fsmTransition pivot = {NIL, 0, 0, start_0 + 1};
+    fsmTransition pivot = {NIL, 0, 0, 3};
     insert_transition(dest, 2, &pivot);
    
     for(nd = aL_idx(&f->data, 2); nd != aL_done(&f->data); nd = aL_next(&f->data, nd)){
@@ -285,7 +279,6 @@ fsm *fsm_k_star(fsm *f){
 
     return dest;
 }
-
 
 
 arrayList fsm_match(

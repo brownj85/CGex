@@ -7,13 +7,12 @@
 #include "util.h"
 
 enum transitionRule{
-    FAIL    = 0,
-    ACCEPT  = 1,
-
     EQ      = 3,
     N_EQ    = 4,
 
-    NIL     = 5
+    NIL     = 5,
+
+    CTR     = 6
 };
 
 typedef struct fsmTransition{
