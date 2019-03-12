@@ -29,8 +29,6 @@ typedef struct fsm{
     arrayList data;
 }fsm;
 
-size_t fsmTransition_test(fsmTransition transition, wchar_t ch);
-
 fsm *fsm_make();
 
 void fsm_free(fsm *f);
