@@ -74,24 +74,32 @@ static inline size_t test_transition(fsmTransition t, wchar_t ch){
             return 0;
     }
 
-    assert(0);
     return 0;
 }
 
 
-static inline void get_next_states(
-        fsm *f, wchar_t ch, arrayList *nd,
+static void get_next_states(
+        fsm *f, wchar_t ch,
         struct state_tuple curr_st, arrayList *next_states){
 
+    arrayList nd;
+    arrayList_get_cpy(&f->data, curr_st.nd, &nd);
+    
     fsmTransition *t;
-    for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
-        size_t exit_nd = test_transition(*t, ch);
+    for(t = aL_first(&nd); t != aL_done(&nd); t = aL_next(&nd, t)){
 
-        if(exit_nd){
-            struct state_tuple next_state = 
-                {exit_nd, curr_st.strt, curr_st.end + 1};
+        if(t->rule == NIL){
+            struct state_tuple next_state = {t->exit_nd, curr_st.strt, curr_st.end};
+            get_next_states(f, ch, next_state, next_states);
+        }else{
+            size_t exit_nd = test_transition(*t, ch);
 
-            arrayList_append(next_states, &next_state);
+            if(exit_nd){
+                struct state_tuple next_state = 
+                    {exit_nd, curr_st.strt, curr_st.end + 1};
+
+                arrayList_append(next_states, &next_state);
+            }
         }
     }
 }
@@ -301,10 +309,7 @@ arrayList fsm_match(
                     break;
 
             }else{
-                arrayList nd;
-                arrayList_get_cpy(&f->data, curr_st.nd, &nd);
-
-                get_next_states(f, str[i], &nd, curr_st, next_states);
+                get_next_states(f, str[i], curr_st, next_states);
             }
         }
 
@@ -315,7 +320,7 @@ arrayList fsm_match(
 
         memswap(&next_states, &active_states, sizeof(arrayList *));
 
-            
+    
     }
 
     arrayList_free(&stack_a);

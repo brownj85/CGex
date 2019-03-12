@@ -12,6 +12,8 @@ enum transitionRule{
 
     EQ      = 3,
     N_EQ    = 4,
+
+    NIL     = 5
 };
 
 typedef struct fsmTransition{
