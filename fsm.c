@@ -38,7 +38,7 @@ void print_fsm(fsm *f){
 }
 
 // == Utility Functions
-void insert_transition(fsm *f, size_t node_id, fsmTransition *t){
+static inline void insert_transition(fsm *f, size_t node_id, fsmTransition *t){
  
     assert(node_id < fsm_len(f));
 
@@ -53,9 +53,6 @@ static inline size_t add_node(fsm *f){
     return arrayList_append(&f->data, &nd) - 1;
 }
 
-size_t fsm_add_node(fsm *f){
-    return add_node(f);
-}
 
 static inline size_t test_transition(fsmTransition t, wchar_t ch){
 
@@ -78,11 +75,28 @@ static inline size_t test_transition(fsmTransition t, wchar_t ch){
     return 0;
 }
 
+
+static inline void get_next_states(
+        fsm *f, wchar_t ch, arrayList *nd,
+        struct state_tuple curr_st, arrayList *next_states){
+
+    fsmTransition *t;
+    for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
+        size_t exit_nd = test_transition(*t, ch);
+
+        if(exit_nd){
+            struct state_tuple next_state = 
+                {exit_nd, curr_st.strt, curr_st.end + 1};
+
+            arrayList_append(next_states, &next_state);
+        }
+    }
+}
+
+
 //  ==
 
-void fsm_insert_transition(fsm *f, size_t node_id, fsmTransition *t){
-    insert_transition(f, node_id, t);
-}
+
 fsm *fsm_make(){
     fsm *f = check_malloc(sizeof(fsm), "malloc in fsm_make");
 
@@ -111,6 +125,14 @@ void fsm_free(fsm *f){
 
 size_t fsm_len(fsm *f){
     return f->data.len;
+}
+
+size_t fsm_add_node(fsm *f){
+    return add_node(f);
+}
+
+void fsm_insert_transition(fsm *f, size_t node_id, fsmTransition *t){
+    insert_transition(f, node_id, t);
 }
 
 fsm *fsm_union(fsm *a, fsm *b){
@@ -239,22 +261,7 @@ fsm *fsm_k_star(fsm *f){
     return dest;
 }
 
-static inline void get_next_states(
-        fsm *f, wchar_t ch, arrayList *nd,
-        struct state_tuple curr_st, arrayList *next_states){
 
-    fsmTransition *t;
-    for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
-        size_t exit_nd = test_transition(*t, ch);
-
-        if(exit_nd){
-            struct state_tuple next_state = 
-                {exit_nd, curr_st.strt, curr_st.end + 1};
-
-            arrayList_append(next_states, &next_state);
-        }
-    }
-}
 
 arrayList fsm_match(
         fsm *f, wchar_t *str, int max_matches){
@@ -280,8 +287,6 @@ arrayList fsm_match(
 
         assert(next_states->len == 0);
 
-        print_states(active_states);
-        printf("%c, %d\n", str[i], escaped);        
         while(active_states->len > 0){
             arrayList_pop(active_states, &curr_st);
            
@@ -300,21 +305,10 @@ arrayList fsm_match(
             }
         }
 
-       // bool escaped_trig = escaped;
-
-     //   if(str[i] == ESC_CH && !escaped)
-    //        escaped = true;
+        struct state_tuple next = {2, i + 1, i + 1};
+        arrayList_append(next_states, &next);
         
-        if(!escaped){
-            struct state_tuple next = {2, i + 1, i + 1};
-            arrayList_append(next_states, &next);
-        }
         i++;
-
-//        if(escaped_trig)
-  //          escaped = false;
-
-        
 
         memswap(&next_states, &active_states, sizeof(arrayList *));
 
