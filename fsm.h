@@ -44,6 +44,10 @@ fsm *fsm_concat(fsm *a, fsm *b);
 
 fsm *fsm_k_star(fsm *f);
 
+fsm *fsm_kplus(fsm *f);
+
+fsm *fsm_zero_or_one(fsm *f);
+
 arrayList fsm_match(fsm *f, wchar_t *str, int max_matches);
 
 void print_fsm(fsm *);

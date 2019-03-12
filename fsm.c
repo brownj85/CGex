@@ -280,7 +280,30 @@ fsm *fsm_k_star(fsm *f){
     return dest;
 }
 
+fsm *fsm_kplus(fsm *f){
+    fsm *g = fsm_k_star(f);
+    fsm *q = fsm_concat(f, g);
 
+    fsm_free(g);
+
+    return q;
+}
+
+fsm *fsm_zero_or_one(fsm *f){
+    fsm *e = fsm_make();
+
+    fsm_add_node(e);
+
+    fsmTransition null = {NIL, 0, 0, 1};
+    fsm_insert_transition(e, 2, &null);
+
+    fsm *g = fsm_union(e, f);
+
+    fsm_free(e);
+
+    return g;
+}
+    
 arrayList fsm_match(
         fsm *f, wchar_t *str, int max_matches){
 
