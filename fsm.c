@@ -22,9 +22,11 @@ void print_states(arrayList *active_states){
     printf("--------------------\n");
 }
 
+
 void print_transition(fsmTransition t){
     printf("([%c-%c]: -> %ld)", (char) t.min_ch, (char) t.max_ch, t.exit_nd);
 }
+
 
 void print_fsm(fsm *f){
     arrayList *nd;
@@ -36,6 +38,7 @@ void print_fsm(fsm *f){
         printf("\n------\n");
     }
 }
+
 
 // == Utility Functions
 static inline void insert_transition(fsm *f, size_t node_id, fsmTransition *t){
