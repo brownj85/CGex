@@ -14,7 +14,7 @@ int main(int argc, char **argv){
 
             struct uint_tuple *t;
             for(t = aL_first(&m); t != aL_done(&m); t = aL_next(&m, t)){
-                wchar_t *mtch = get_substring(pattern, *t);
+                wchar_t *mtch = get_substring(in, *t);
                 printf("%ls\n", mtch);
             }
         }
