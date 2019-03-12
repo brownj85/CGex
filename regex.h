@@ -1,27 +1,25 @@
 #include "fsm.h"
 #include <wchar.h>
 
-const int NUM_MCH = 14;
-const wchar_t metaChars[] = {0,
-    
-    '\\',                           //escape
+#ifndef REGEX_H
+#define REGEX_H
 
-    '^', '$', '.',                  //start
-
-    '*', '+', '?', '|',
-
-    '(', ')',  '[', ']',  '{', '}'
-
-};
-const char *metaChar_repr[] = {"",
-    "escape",
-    
-    "beginning of string", "end of string", "all char except newline",
-
-    "kleene star", "match at least once", "match at most once",
-
-    "grouping", "grouping", "character set", "character set", "repitiion", "repitition"
+enum metaCharIdx{
+    ESC = 1,
+    MATCH_ANY = 2,
+    KSTAR = 3,
+    ALT = 4,
+    LGRP = 5,
+    RGRP = 6,
+    LSET = 7,
+    RSET = 8
 };
 
+extern const int NUM_MCH;
+extern const wchar_t metaChars[];
+extern const char *metaChar_repr[];
+extern const bool metaChar_impl[];
 
 fsm *parse_regex(wchar_t *pattern);
+
+#endif
