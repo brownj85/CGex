@@ -6,6 +6,8 @@
 #include "array_list/array_list.h"
 #include "util.h"
 
+#define ESC_CH L'\\'
+
 enum transitionRule{
     FAIL    = 0,
     ACCEPT  = 1,
@@ -20,14 +22,12 @@ typedef struct fsmTransition{
     wchar_t max_ch;
 
     size_t exit_nd;
+
 }fsmTransition;
 
 typedef struct fsm{
     arrayList data;
 }fsm;
-
-fsmTransition fsmTransition_make(
-        enum transitionRule rule, wchar_t min_ch, wchar_t max_ch, size_t exit_nd);
 
 size_t fsmTransition_test(fsmTransition transition, wchar_t ch);
 
@@ -41,13 +41,17 @@ fsm *make_string_fsm(wchar_t *str, bool invert);
 
 fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges, bool invert);
 
+void fsm_insert_transition(fsm *f, size_t node_id, fsmTransition *t);
+
+size_t fsm_add_node(fsm *f);
+
 fsm *fsm_union(fsm *a, fsm *b);
 
 fsm *fsm_concat(fsm *a, fsm *b);
 
 fsm *fsm_k_star(fsm *f);
 
-arrayList fsm_match(fsm *f, wchar_t *str, size_t max_matches);
+arrayList fsm_match(fsm *f, wchar_t *str, int max_matches);
 
 
 void print_fsm(fsm *);

@@ -38,17 +38,13 @@ void print_fsm(fsm *f){
 }
 
 // == Utility Functions
-static inline void insert_transition(fsm *f, size_t node_id,
-        enum transitionRule rule, wchar_t min_ch, wchar_t max_ch,
-        size_t exit_nd){
+void insert_transition(fsm *f, size_t node_id, fsmTransition *t){
  
     assert(node_id < fsm_len(f));
-    
-    fsmTransition t = {rule, min_ch, max_ch, exit_nd};
 
     arrayList_append(
             arrayList_get_ptr(&f->data, node_id),
-            &t);
+            t);
 }
 
 static inline size_t add_node(fsm *f){
@@ -56,7 +52,10 @@ static inline size_t add_node(fsm *f){
     
     return arrayList_append(&f->data, &nd) - 1;
 }
-     
+
+size_t fsm_add_node(fsm *f){
+    return add_node(f);
+}
 
 static size_t test_transition(fsmTransition t, wchar_t ch){
 
@@ -81,15 +80,21 @@ static size_t test_transition(fsmTransition t, wchar_t ch){
 
 //  ==
 
+void fsm_insert_transition(fsm *f, size_t node_id, fsmTransition *t){
+    insert_transition(f, node_id, t);
+}
 fsm *fsm_make(){
     fsm *f = check_malloc(sizeof(fsm), "malloc in fsm_make");
 
     f->data = arrayList_make(sizeof(arrayList), true);
 
     add_node(f);
-    insert_transition(f, 0, FAIL, 0, 0, 0);
+    fsmTransition fail = {FAIL, 0, 0, 0};
+    insert_transition(f, 0, &fail);
+
     add_node(f);
-    insert_transition(f, 1, ACCEPT, 0, 0, 1);
+    fsmTransition acc = {ACCEPT, 0, 0, 1};
+    insert_transition(f, 1, &acc);
 
     return f;   
 }
@@ -121,33 +126,36 @@ fsm *make_string_fsm(wchar_t *str, bool invert){
 
     while(*(str + 1) != '\0'){
         size_t nd = add_node(f);
-        insert_transition(f, nd, match_type, *str, *str, nd + 1);
+        fsmTransition t = {match_type, *str, *str, nd + 1};
+        insert_transition(f, nd, &t);
         str++;
     }
     size_t nd = add_node(f);
-    insert_transition(f, nd, match_type, *str, *str, 1);
-
+    fsmTransition t = {match_type, *str, *str, 1};
+    insert_transition(f, nd, &t);
+    
     print_fsm(f);
 
     return f;
 }
 
 fsm *make_charset_fsm(struct uint_tuple *ranges, size_t num_ranges, bool invert){
-    char match_type = EQ;
-    if(invert){
-        match_type = N_EQ;
-    }
+    return NULL;
+    //    char match_type = EQ;
+//    if(invert){
+//        match_type = N_EQ;
+//    }
 
-    fsm *f = fsm_make();
-    size_t nd = add_node(f);
-    for(int i = 0; i < num_ranges; i++){
-        struct uint_tuple range = ranges[i];
-        insert_transition(f, nd, match_type, range.a, range.b, 1);
-    }
-
-    print_fsm(f);
-
-    return f;
+//    fsm *f = fsm_make();
+//    size_t nd = add_node(f);
+//    for(int i = 0; i < num_ranges; i++){
+//        struct uint_tuple range = ranges[i];
+//        insert_transition(f, nd, match_type, range.a, range.b, 1);
+//    }
+//
+//    print_fsm(f);
+//
+//    return f;
 }
 
 fsm *fsm_union(fsm *a, fsm *b){
@@ -177,7 +185,8 @@ fsm *fsm_union(fsm *a, fsm *b){
        else
            exit_node = t->exit_nd;
 
-       insert_transition(dest, 2, t->rule, t->min_ch, t->max_ch, exit_node);
+       fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
+       insert_transition(dest, 2, &t_p);
     }
 
     
@@ -196,8 +205,9 @@ fsm *fsm_union(fsm *a, fsm *b){
                 exit_node = t->exit_nd + shift_amt;
             else
                 exit_node = t->exit_nd;
-
-            insert_transition(dest, id_p, t->rule, t->min_ch, t->max_ch, exit_node);
+       
+            fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
+            insert_transition(dest, id_p, &t_p);
         }
     }
 
@@ -224,7 +234,9 @@ fsm *fsm_concat(fsm *a, fsm *b){
             else
                 exit_node = t->exit_nd;
             add_node(dest);
-            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, exit_node);
+
+            fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
+            insert_transition(dest, id, &t_p);
         }
         id++;
     }
@@ -243,7 +255,9 @@ fsm *fsm_concat(fsm *a, fsm *b){
             else
                 exit_node = t->exit_nd + shift_amt;
             add_node(dest);
-            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, exit_node);
+
+            fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, exit_node};
+            insert_transition(dest, id, &t_p);
         }
         id++;
     }
@@ -261,9 +275,12 @@ fsm *fsm_k_star(fsm *f){
         for(t = aL_first(nd); t != aL_done(nd); t = aL_next(nd, t)){
             size_t id = add_node(dest);
             if(t->exit_nd == 1){
-                insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, 2);
+                fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, 2};
+                insert_transition(dest, id, &t_p);
             }
-            insert_transition(dest, id, t->rule, t->min_ch, t->max_ch, t->exit_nd);
+            
+            fsmTransition t_p = {t->rule, t->min_ch, t->max_ch, t->exit_nd};
+            insert_transition(dest, id, &t_p);
         }
     }
 
@@ -288,7 +305,7 @@ static inline void get_next_states(
 }
 
 arrayList fsm_match(
-        fsm *f, wchar_t *str, size_t max_matches){
+        fsm *f, wchar_t *str, int max_matches){
 
     arrayList matches = arrayList_make(sizeof(struct uint_tuple), true);
 
@@ -303,15 +320,19 @@ arrayList fsm_match(
     bool sent = true;
     arrayList_append(active_states, &curr_st);
 
-    while(sent && matches.len < max_matches){
+    bool escaped = false;
+
+    while(sent && matches.len != max_matches){
         if(str[i] == '\0')
             sent = false;
 
         assert(next_states->len == 0);
-        
+
+        print_states(active_states);
+        printf("%c, %d\n", str[i], escaped);        
         while(active_states->len > 0){
             arrayList_pop(active_states, &curr_st);
-            
+           
             if(curr_st.nd == 1){
                 struct uint_tuple match = {curr_st.strt, curr_st.end};
                 arrayList_append(&matches, &match);
@@ -327,12 +348,25 @@ arrayList fsm_match(
             }
         }
 
-        struct state_tuple next = {2, i + 1, i + 1};
-        arrayList_append(next_states, &next);
+       // bool escaped_trig = escaped;
+
+     //   if(str[i] == ESC_CH && !escaped)
+    //        escaped = true;
         
+        if(!escaped){
+            struct state_tuple next = {2, i + 1, i + 1};
+            arrayList_append(next_states, &next);
+        }
         i++;
 
+//        if(escaped_trig)
+  //          escaped = false;
+
+        
+
         memswap(&next_states, &active_states, sizeof(arrayList *));
+
+            
     }
 
     arrayList_free(&stack_a);
