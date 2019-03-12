@@ -77,15 +77,13 @@ static inline fsm *apply_quantifier(fsm *f, wchar_t quant){
 }
 
 
-int parse_group(wchar_t *grp_start, fsm **res_ptr){
+int parse_group(wchar_t *str, fsm **res_ptr){
     int i = 0;
+    bool escaped = false;
 
-    wchar_t *str = grp_start;
-    
     fsm *acc = NULL;
     fsm *alt = NULL;
     
-    bool escaped = false;
     while(str[i] != '\0'){
         fsm *curr = NULL;
         if(str[i] == metaChars[ESC] && !escaped){
