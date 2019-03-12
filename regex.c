@@ -15,6 +15,8 @@ static inline void err_expr_invalid(wchar_t *pattern, size_t start, size_t end){
     exit(1);
 }
 
+
+
 int parse_set(wchar_t *str, fsm **res_ptr){
     fsm *f = fsm_make();
 
@@ -30,8 +32,18 @@ int parse_set(wchar_t *str, fsm **res_ptr){
             escaped = true;
         }else{
             escaped = false;
+
+            fsmTransition t;
+            if(str[i + 1] == '-'){
+                if(str[i + 2] == '\0')
+                    err_expr_invalid(str, 0, wcslen(str));
+
+                t = (fsmTransition) {EQ, str[i], str[i + 2], 1};
+
+                i += 2;
+            }else
+                t = (fsmTransition) {EQ, str[i], str[i], 1};
             
-            fsmTransition t = {EQ, str[i], str[i], 1};
             fsm_insert_transition(f, 2, &t);
         }
         i++;
@@ -41,6 +53,28 @@ int parse_set(wchar_t *str, fsm **res_ptr){
     return 0;
 }
 
+static inline bool is_quantifier(wchar_t ch){
+    for(int i = 0; i < NUM_QTFR; i++){
+        if(ch == quantifier[i]){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static inline fsm *apply_quantifier(fsm *f, wchar_t quant){
+    fsm *g = NULL;
+    if(quant == metaChars[KSTAR]){
+        g = fsm_k_star(f);
+    }else if(quant == metaChars[KPLUS]){
+        g = fsm_kplus(f);
+    }else if(quant == metaChars[AMO]){
+        g = fsm_zero_or_one(f);
+    }
+
+    return g;
+}
 
 
 int parse_group(wchar_t *grp_start, fsm **res_ptr){
@@ -77,9 +111,8 @@ int parse_group(wchar_t *grp_start, fsm **res_ptr){
 
         if(curr != NULL){
             escaped = false;
-            if(str[i] == metaChars[KSTAR]){
-                fsm *g = fsm_k_star(curr);
-                
+            if(is_quantifier(str[i])){
+                fsm *g = apply_quantifier(curr, str[i]);
                 memswap(&g, &curr, sizeof(fsm *));
                 fsm_free(g);
                 i++;

@@ -1,25 +1,35 @@
 #include <wchar.h>
-#include <stdbool.h>
 #ifndef REGEX_CONST
 #define REGEX_CONST
 
-const int NUM_MCH = 8;
+const int NUM_MCH = 10;
 const wchar_t metaChars[] = {0,
+                        
+    92,                 
     
-    92,   '.',                  //character specifiers
+    '.',                  
 
-    '*',    '|',                 //
+    '*',  '+',  '?',    
+    
+    '|',                   
 
-    '(', ')',  '[', ']'         
+    '(', ')',           
+    
+    '[', ']'            
 
 };
 
+const int NUM_QTFR = 3;
+const wchar_t quantifier[] = {
+    '*', '+', '?'
+};
+
 const char *metaChar_repr[] = {"",
-    "escape", "all char except newline",
+    "escape", "all characters except newline",
 
-    "kleene star", "alternation",
+    "kleene star", "kleene plus", "at most once", "alternation",
 
-    "grouping_r", "grouping_l", "character set l", "character set r"
+    "grouping", "grouping", "character set", "character set"
 };
 
 #endif

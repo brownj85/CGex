@@ -7,18 +7,25 @@
 enum metaCharIdx{
     ESC = 1,
     MATCH_ANY = 2,
+    
     KSTAR = 3,
-    ALT = 4,
-    LGRP = 5,
-    RGRP = 6,
-    LSET = 7,
-    RSET = 8
+    KPLUS = 4,
+    AMO = 5,
+    ALT = 6,
+
+    LGRP = 7,
+    RGRP = 8,
+    LSET = 9,
+    RSET = 10
 };
 
 extern const int NUM_MCH;
+
 extern const wchar_t metaChars[];
 extern const char *metaChar_repr[];
-extern const bool metaChar_impl[];
+
+extern const int NUM_QTFR;
+extern const wchar_t quantifier[];
 
 fsm *parse_regex(wchar_t *pattern);
 
